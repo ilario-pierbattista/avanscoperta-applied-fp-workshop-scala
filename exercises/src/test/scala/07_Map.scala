@@ -1,6 +1,7 @@
 package exercises
 
 import minitest._
+import minitest.api.Result
 
 /*
  * When we compose functions in fact we chain them.
@@ -38,7 +39,8 @@ object MapTests extends SimpleTestSuite {
       else throw NotAnIntException(s)
 
   val toiTry: String => Try[Int] =
-    _ => ???
+    s => if (s.matches("^[0-9]+$")) Success(s.toInt)
+    else Failure(NotAnIntException(s))
 
   val dec: Int => Int =
     n => n - 1
@@ -55,19 +57,18 @@ object MapTests extends SimpleTestSuite {
   }
 
   test("chain two functions") {
-    val program: String => String =
-      toi.andThen(dec).andThen(tos)
+    val program: String => Try[String] =
+      toiTry(_).map(dec).map(tos)
 
     val result = program("10")
-    assertEquals(result, "9")
+    assertEquals(result, Success("9"))
   }
 
   test("fail") {
-    val program: String => String =
-      toi.andThen(dec).andThen(tos)
+    val program: String => Try[String] =
+      str => toiTry(str).map(dec).map(tos)
 
-    intercept[NotAnIntException] {
-      program("foo"); ()
-    }
+    val result = program("foo")
+    assertEquals(result, Failure(NotAnIntException("foo")))
   }
 }

@@ -17,7 +17,8 @@ object FoldTests extends SimpleTestSuite {
   import scala.util.{Failure, Success, Try}
 
   case class NotAnIntException(s: String) extends RuntimeException(s"not an int: $s")
-  case class DivByZeroException()         extends RuntimeException("div by zero")
+
+  case class DivByZeroException() extends RuntimeException("div by zero")
 
   val toi: String => Try[Int] =
     s =>
@@ -37,10 +38,10 @@ object FoldTests extends SimpleTestSuite {
 
   test("remove effect - happy") {
     val program: String => Try[String] =
-      s => toi(s).map(dec).flatMap(div).map(tos)
+      toi(_).map(dec).flatMap(div).map(tos)
 
-    ignore("use getOrElse to remove the Try effect")
-    val result = program("10")
+    // ignore("use getOrElse to remove the Try effect")
+    val result = program("10").getOrElse("")
     assertEquals(result, "1")
   }
 
@@ -48,8 +49,8 @@ object FoldTests extends SimpleTestSuite {
     val program: String => Try[String] =
       s => toi(s).map(dec).flatMap(div).map(tos)
 
-    ignore("use getOrElse to remove the Try effect")
-    val result = program("1")
+    // ignore("use getOrElse to remove the Try effect")
+    val result = program("1").getOrElse("zero")
     assertEquals(result, "zero")
   }
 
@@ -57,8 +58,8 @@ object FoldTests extends SimpleTestSuite {
     val program: String => Try[String] =
       s => toi(s).map(dec).flatMap(div).map(tos)
 
-    ignore("use fold to remove the Try effect")
-    val result = program("1")
+    // ignore("use fold to remove the Try effect")
+    val result = program("1").getOrElse(DivByZeroException().getMessage)
     assertEquals(result, DivByZeroException().getMessage)
   }
 }

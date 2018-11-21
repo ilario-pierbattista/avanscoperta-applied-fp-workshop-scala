@@ -20,26 +20,25 @@ object PatternMatchDispatch extends SimpleTestSuite {
    *       Keep tests green.
    */
 
-  trait Direction {
-    def turnRight: Direction
-    def turnLeft: Direction
+  sealed trait Direction {
+    def turnRight: Direction = this match {
+      case N() => E()
+      case E() => S()
+      case S() => W()
+      case W() => N()
+    }
+    def turnLeft: Direction = this match {
+      case N() => W()
+      case W() => S()
+      case S() => E()
+      case E() => N()
+    }
   }
-  case class N() extends Direction {
-    def turnRight: Direction = E()
-    def turnLeft: Direction  = W()
-  }
-  case class E() extends Direction {
-    def turnRight: Direction = S()
-    def turnLeft: Direction  = N()
-  }
-  case class W() extends Direction {
-    def turnRight: Direction = N()
-    def turnLeft: Direction  = S()
-  }
-  case class S() extends Direction {
-    def turnRight: Direction = W()
-    def turnLeft: Direction  = E()
-  }
+
+  case class N() extends Direction
+  case class E() extends Direction
+  case class W() extends Direction
+  case class S() extends Direction
 
   test("turn right") {
     assertEquals(N().turnRight, E())
