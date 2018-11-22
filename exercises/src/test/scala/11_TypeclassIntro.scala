@@ -1,5 +1,7 @@
 package exercises
 
+import cats.kernel.Monoid
+import exercises.TypeclassScalaTests.Semigroup
 import minitest._
 
 /*
@@ -25,7 +27,9 @@ object TypeclassIntroTests extends SimpleTestSuite {
    */
 
   object Concrete {
+
     case class BoxInt(value: Int)
+
     case class BoxString(value: String)
 
     def sumInt(a: BoxInt, b: BoxInt): BoxInt =
@@ -53,8 +57,28 @@ object TypeclassIntroTests extends SimpleTestSuite {
 
     case class Box[A](value: A)
 
-    def sum[A](a: Box[A], b: Box[A]): Box[A] =
-      ???
+    trait Monoid[A] {
+      def empty: A
+
+      def combine(x: A, y: A): A
+    }
+
+    implicit
+    val intSummable: Monoid[Int] = new Monoid[Int] {
+      override def empty: Int = 0
+
+      override def combine(x: Int, y: Int): Int = x + y
+    }
+
+    implicit
+    val stringSummable: Monoid[String] = new Monoid[String] {
+      override def empty: String = ""
+
+      override def combine(x: String, y: String): String = x + y
+    }
+
+    def sum[A](a: Box[A], b: Box[A])(implicit s: Monoid[A]): Box[A] =
+      Box[A](s.combine(a.value, b.value))
   }
 
   test("create boxes - polymorphic") {
@@ -67,7 +91,7 @@ object TypeclassIntroTests extends SimpleTestSuite {
   test("sum boxes - polymorphic") {
     import Polymorphic._
 
-    ignore("implements sum[A] function")
+    // ignore("implements sum[A] function")
 
     assertEquals(sum(Box(42), Box(100)).value, 142)
     assertEquals(sum(Box("foo"), Box("bar")).value, "foobar")

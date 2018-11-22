@@ -40,24 +40,32 @@ object TypeclassHKTests extends SimpleTestSuite {
    *       Implements MRUList.add.
    */
 
-  trait Stack[F[_]] {}
+  trait Functor[F[_]] {
+    def map[A, B](fa:F[A])(f: A => B): F[B]
+  }
 
-  implicit val listStack = new Stack[List] {}
+  trait Stack[F[_]] {
+    def push[A](container: F[A], item: A): F[A]
+  }
+
+  implicit val listStack: Stack[List] = new Stack[List] {
+    override def push[A](container: List[A], item: A): List[A] = item :: container
+  }
 
   object Stack {
-    def apply[F[_]](implicit x: Stack[F]) = x
+    def apply[F[_]](implicit x: Stack[F]): Stack[F] = x
   }
 
   object MRUList {
-    def add[F[_]: Stack, A](value: A, items: F[A]): F[A] =
-      ???
+    def add[F[_] : Stack, A](value: A, items: F[A])(implicit s: Stack[F]): F[A] =
+      s.push(items, value)
   }
 
   test("add an element to the MRU list") {
     import MRUList._
 
-    ignore("implement missing functions")
-    val items  = List("first")
+    // ignore("implement missing functions")
+    val items = List("first")
     val result = add("second", items)
     assertEquals(result, List("second", "first"))
   }
